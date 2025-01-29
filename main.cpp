@@ -1,66 +1,78 @@
 /*
-Khiem Do
-Project 5
-Insert and analyze data in a tree imported from file
-*/
-#include "Trie.h"
+ * Project 6
+ * Khiem Do
+ * Real-life database programming
+ */
+//ps: Jon, I am quite tired to write code explanation for this main, so forgive me. Thank you for being my TA for this semester. I wish you have a wonderful break.
+#include "Database.h"
 #include <iostream>
-#include <fstream>
+
+using namespace std;
 
 int main() {
-    Trie myTrie;
-    string filename = "wordlist.txt";
-    ifstream infile(filename); //Opens the file filename for reading.
+    Database db;
+    int collisions;
+    char choice;
 
-    if (!infile) { //Checks if the file was successfully opened.
-        cerr << "Error opening file: " << filename << endl;
-        return 1;
-    }
-
-    string word;
-    while (infile >> word) { //(>>) mean read each word from the file and stores it in the word variable.
-        myTrie.insert(word); //add word into tree
-    }
-    infile.close(); //good habit, always return the borrowed tool
-
-    cout << "The total word in the trie are " << myTrie.countWord() << endl;
-    cout << "The total node in the trie are " << myTrie.countNode() << endl;
-    string wordCheck;
     while (true) {
-        cout << "What word you want to check if presented in the file?"<<endl;
-        getline(cin,wordCheck);
-        if (wordCheck.empty()) { //if no input, exit the while loop
-            break;
-        }
-        if(myTrie.find(wordCheck)==1) {
-            cout << "The word \"" << wordCheck << "\" is present." << endl;
-        }
-        else
-            cout << "The word \"" << wordCheck << "\" is not present." << endl;
-        break;
-    }
+        cout << "\nWould you like to (I)nsert, (D)elete, (S)earch, (P)rint the database, or (Q)uit?\nEnter action: ";
+        cin >> choice;
+        choice = toupper(choice);
 
-    string prefix;
-    while (true) { //creates an infinite loop that will continue to execute until a break statement is encountered.
-        cout << "Please enter a word prefix (or press enter to exit): ";
-        getline(cin, prefix);
-        if (prefix.empty()) { //if no input, exit the while loop and end program
-            break;
-        }
+        if (choice == 'I') {
+            string firstName, lastName, year;
+            int uid;
+            cout << "Inserting a new record.\n";
+            cout << "Last name: ";
+            cin >> lastName;
+            cout << "First name: ";
+            cin >> firstName;
+            cout << "UID: ";
+            cin >> uid;
+            cout << "Year: ";
+            cin >> year;
 
-        int count = myTrie.completeCount(prefix);
-        cout << "There are " << count << " completions for the prefix '" << prefix << "'. Show completions? (yes/no): ";
-        string response;
-        getline(cin, response);
-
-        if (response == "yes" || response == "Yes") {
-            vector<string> completions = myTrie.complete(prefix);
-            cout << "Completions\n-----------\n";
-            for (const string& print : completions) { //for every result, print.
-                cout << print << endl;
+            Record newRecord(firstName, lastName, uid, year);
+            if (db.insert(newRecord, collisions)) {
+                cout << "Record inserted (" << collisions << " collisions during insert)." << endl;
+            } else {
+                cout << "Failed to insert record. Duplicate UID or hash table full." << endl;
             }
+
+        } else if (choice == 'D') {
+            int uid;
+            cout << "Enter UID to delete: ";
+            cin >> uid;
+            if (db.remove(uid)) {
+                cout << "Record deleted." << endl;
+            } else {
+                cout << "Record not found." << endl;
+            }
+
+        } else if (choice == 'S') {
+            int uid;
+            Record foundRecord;
+            cout << "Enter UID to search for: ";
+            cin >> uid;
+            if (db.find(uid, foundRecord, collisions)) {
+                cout << "Searching... record found (" << collisions << " collisions during search)" << endl;
+                cout << "----------------------------" << endl;
+                cout << foundRecord << endl;
+                cout << "----------------------------" << endl;
+            } else {
+                cout << "Searching... record not found" << endl;
+            }
+
+        } else if (choice == 'P') {
+            cout << db;
+
+        } else if (choice == 'Q') {
+            cout << "Exiting." << endl;
+            break;
+        } else {
+            cout << "Invalid choice. Please try again." << endl;
         }
-        //other than yes, no. Goodbye!
     }
+
     return 0;
 }
